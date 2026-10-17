@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Naruto Character Spin Wheel</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&display=swap">
+<style>
+:root{--bg:#f3efe6;--ink:#1d1b2e;--mut:#6b6880;--card:#fffdf8;--line:#d9d3c4;--acc:#e8651a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15142a;--ink:#f1eee6;--mut:#a09db8;--card:#1f1d3a;--line:#37345c;--acc:#ff8a3d}}
+:root[data-theme="dark"]{--bg:#15142a;--ink:#f1eee6;--mut:#a09db8;--card:#1f1d3a;--line:#37345c;--acc:#ff8a3d}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+main{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+h1{font-family:"Shippori Mincho B1",Georgia,serif;font-weight:800;font-size:1.9rem;margin:0 0 4px;letter-spacing:.01em}
+.sub{color:var(--mut);margin:0 0 16px;font-size:.95rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{border:2px solid var(--c);background:transparent;color:var(--ink);border-radius:999px;padding:6px 12px;font-size:.85rem;cursor:pointer;display:flex;gap:6px;align-items:center}
+.chip[aria-pressed="true"]{background:var(--c);color:#fff}
+.chip:focus-visible,button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.stage{position:relative;width:100%;max-width:520px;aspect-ratio:1;margin:0 auto}
+canvas{width:100%;height:100%;display:block}
+.pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:34px solid var(--ink);filter:drop-shadow(0 2px 0 var(--acc));z-index:2}
+.row{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;margin:18px 0 10px}
+#spin{background:var(--acc);color:#fff;border:0;border-radius:12px;padding:14px 36px;font-size:1.15rem;font-weight:700;cursor:pointer;font-family:"Shippori Mincho B1",Georgia,serif}
+#spin:disabled{opacity:.5;cursor:default}
+.tog{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--mut)}
+.result{background:var(--card);border:1px solid var(--line);border-left:8px solid var(--rc,var(--acc));border-radius:10px;padding:14px 16px;margin-top:12px;min-height:84px}
+.result b{display:block;font-family:"Shippori Mincho B1",Georgia,serif;font-size:1.5rem}
+.result span{color:var(--mut);font-size:.9rem}
+.hist{margin-top:18px;font-size:.88rem;color:var(--mut)}
+.hist button{background:none;border:0;color:var(--acc);cursor:pointer;font-size:.88rem;padding:0 0 0 6px;text-decoration:underline}
+.count{font-size:.85rem;color:var(--mut);text-align:center}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Naruto Spin Wheel</h1>
+  <p class="sub">Every character from the series, plus movie and Boruto characters. Tap a group to include or exclude it.</p>
+  <div class="chips" id="chips"></div>
+  <div class="stage"><div class="pointer"></div><canvas id="wheel" aria-label="Spin wheel of Naruto characters"></canvas></div>
+  <div class="row">
+    <button id="spin">Spin</button>
+    <label class="tog"><input type="checkbox" id="rm"> Remove winner after spin</label>
+  </div>
+  <div class="count" id="count"></div>
+  <div class="result" id="result" aria-live="polite"><span>Press Spin to pick a character.</span></div>
+  <div class="hist" id="hist"></div>
+</main>
+<script>
+var G={
+ leaf:{n:"Hidden Leaf",c:"#2e9e4f"},
+ aka:{n:"Akatsuki",c:"#c8202f"},
+ sand:{n:"Sand",c:"#c9921a"},
+ snake:{n:"Snake & Taka",c:"#7a3fb5"},
+ other:{n:"Other villages",c:"#2a74c4"},
+ ots:{n:"Otsutsuki & Legends",c:"#6b7280"}
+};
+var D={
+ leaf:["Naruto Uzumaki","Sasuke Uchiha","Sakura Haruno","Kakashi Hatake","Rock Lee","Neji Hyuga","Tenten","Shikamaru Nara","Choji Akimichi","Ino Yamanaka","Kiba Inuzuka","Shino Aburame","Hinata Hyuga","Might Guy","Asuma Sarutobi","Kurenai Yuhi","Iruka Umino","Jiraiya","Tsunade","Minato Namikaze","Kushina Uzumaki","Hiruzen Sarutobi","Danzo Shimura","Itachi Uchiha","Shisui Uchiha","Yamato","Anko Mitarashi","Ebisu","Genma Shiranui","Raido Namiashi","Izumo Kamizuki","Kotetsu Hagane","Aoba Yamashiro","Ibiki Morino","Hayate Gekko","Yugao Uzuki","Shizune","Fugaku Uchiha","Mikoto Uchiha","Inoichi Yamanaka","Shikaku Nara","Choza Akimichi","Tsume Inuzuka","Hiashi Hyuga","Hanabi Hyuga","Hizashi Hyuga","Teuchi","Ayame","Konohamaru Sarutobi","Moegi","Udon","Sakumo Hatake","Rin Nohara","Dan Kato","Homura Mitokado","Koharu Utatane","Mito Uzumaki","Nawaki","Kagami Uchiha","Pakkun","Akamaru","Gamabunta","Katsuyu","Manda","Mizuki","Tonton","Fu Yamanaka","Torune Aburame","Boruto Uzumaki","Sarada Uchiha","Mitsuki","Himawari Uzumaki","Shikadai Nara","Inojin Yamanaka","Chocho Akimichi","Metal Lee","Iwabee Yuino","Namida Suzumeshita","Denki Kaminarimon","Sumire Kakei","Tsubaki Kuroi","Wasabi Izuno"],
+ aka:["Pain (Nagato)","Konan","Kisame Hoshigaki","Deidara","Sasori","Hidan","Kakuzu","Obito Uchiha","Zetsu","White Zetsu","Black Zetsu","Yahiko"],
+ sand:["Gaara","Temari","Kankuro","Baki","Chiyo","Ebizo","Rasa","Karura","Yashamaru","Pakura","Matsuri","Shukaku"],
+ snake:["Orochimaru","Kabuto Yakushi","Suigetsu Hozuki","Karin","Jugo","Kimimaro","Sakon","Ukon","Tayuya","Jirobo","Kidomaru","Dosu Kinuta","Zaku Abumi","Kin Tsuchi","Guren","Yoroi Akado"],
+ other:["Zabuza Momochi","Haku","Killer B","A (Fourth Raikage)","Mei Terumi","Onoki","Darui","Kurotsuchi","Yugito Nii","Roshi","Han","Utakata","Fu","Yagura","Chojuro","Ao","Mifune","Hanzo","Tazuna","Inari","Tsunami","Gato","Shion","Fuka","Mubi","Haido","Yukimaru","Samui","Omoi","Karui","Mabui","Cee","Dodai","Ittan","Gengetsu Hozuki","Mangetsu Hozuki","Ameyuri Ringo","Jinpachi Munashi","Kushimaru Kuriarare","Fuguki Suikazan","Kurama"],
+ ots:["Hashirama Senju","Tobirama Senju","Madara Uchiha","Kaguya Otsutsuki","Hagoromo Otsutsuki","Hamura Otsutsuki","Indra Otsutsuki","Ashura Otsutsuki","Momoshiki Otsutsuki","Kinshiki Otsutsuki","Isshiki Otsutsuki","Toneri Otsutsuki","Kawaki","Jigen","Code","Delta","Eida","Daemon","Amado","Boro","Ten-Tails"]
+};
+var all=[];
+Object.keys(D).forEach(function(k){D[k].forEach(function(n){all.push({n:n,g:k})})});
+var on={};Object.keys(G).forEach(function(k){on[k]=true});
+var removed={},hist=[],angle=0,spinning=false;
+var cv=document.getElementById("wheel"),cx=cv.getContext("2d");
+function pool(){return all.filter(function(c){return on[c.g]&&!removed[c.n]})}
+function size(){var r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;draw()}
+function draw(){
+ var W=cv.width,R=W/2-6,p=pool(),n=p.length;
+ cx.clearRect(0,0,W,W);cx.save();cx.translate(W/2,W/2);
+ if(!n){cx.fillStyle="#888";cx.font=(W/20)+"px sans-serif";cx.textAlign="center";cx.fillText("No characters left",0,0);cx.restore();return}
+ var a=2*Math.PI/n;cx.rotate(angle);
+ for(var i=0;i<n;i++){
+  var s=i*a-Math.PI/2-a/2+0;
+  cx.beginPath();cx.moveTo(0,0);cx.arc(0,0,R,s,s+a);cx.closePath();
+  var base=G[p[i].g].c;cx.fillStyle=base;cx.globalAlpha=(i%2)?1:.82;cx.fill();cx.globalAlpha=1;
+  cx.strokeStyle="rgba(255,255,255,.55)";cx.lineWidth=Math.max(1,W/500);cx.stroke();
+  cx.save();cx.rotate(s+a/2);cx.fillStyle="#fff";cx.textAlign="right";cx.textBaseline="middle";
+  var fs=Math.max(W/110,Math.min(W/26,(R*2*Math.PI/n)*.5));
+  cx.font="700 "+fs+"px system-ui,sans-serif";cx.fillText(p[i].n,R-W/40,0);cx.restore();
+ }
+ cx.beginPath();cx.arc(0,0,W/22,0,7);cx.fillStyle="#1d1b2e";cx.fill();cx.strokeStyle="#e8651a";cx.lineWidth=W/100;cx.stroke();
+ cx.restore();
+}
+function chips(){
+ var h=document.getElementById("chips");h.innerHTML="";
+ Object.keys(G).forEach(function(k){
+  var b=document.createElement("button");b.className="chip";b.style.setProperty("--c",G[k].c);
+  b.setAttribute("aria-pressed",on[k]);b.textContent=G[k].n+" ("+D[k].length+")";
+  b.onclick=function(){on[k]=!on[k];angle=0;chips();draw();info()};h.appendChild(b);
+ });
+}
+function info(){document.getElementById("count").textContent=pool().length+" characters on the wheel"}
+function renderHist(){
+ var h=document.getElementById("hist");
+ if(!hist.length){h.innerHTML="";return}
+ h.innerHTML="Past spins: "+hist.join(", ")+'<button id="rs">Reset all</button>';
+ document.getElementById("rs").onclick=function(){hist=[];removed={};angle=0;renderHist();draw();info()};
+}
+function spin(){
+ var p=pool(),n=p.length;if(spinning||!n)return;
+ spinning=true;document.getElementById("spin").disabled=true;
+ var a=2*Math.PI/n,idx=Math.floor(Math.random()*n);
+ var target=-(idx*a)+(Math.random()-.5)*a*.8;
+ var cur=((angle%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+ var end=angle+((target-cur)%(2*Math.PI)-2*Math.PI)-2*Math.PI*(5+Math.floor(Math.random()*3));
+ var start=angle,t0=performance.now(),dur=5200;
+ var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;if(reduce)dur=600;
+ (function f(t){
+  var k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,4);
+  angle=start+(end-start)*e;draw();
+  if(k<1)requestAnimationFrame(f);else finish(p[idx]);
+ })(t0);
+}
+function finish(c){
+ spinning=false;document.getElementById("spin").disabled=false;
+ var r=document.getElementById("result");r.style.setProperty("--rc",G[c.g].c);
+ r.innerHTML="<b></b><span></span>";r.firstChild.textContent=c.n;r.lastChild.textContent=G[c.g].n;
+ hist.unshift(c.n);hist=hist.slice(0,10);
+ if(document.getElementById("rm").checked){removed[c.n]=true;angle=0;draw();info()}
+ renderHist();
+}
+document.getElementById("spin").onclick=spin;
+window.addEventListener("resize",size);
+chips();info();size();
+</script>
+</body>
+</html>
