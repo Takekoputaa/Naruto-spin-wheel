@@ -69,6 +69,8 @@ var D={
 };
 var all=[];
 Object.keys(D).forEach(function(k){D[k].forEach(function(n){all.push({n:n,g:k})})});
+function shuffle(){for(var i=all.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=all[i];all[i]=all[j];all[j]=t}}
+shuffle();
 var on={};Object.keys(G).forEach(function(k){on[k]=true});
 var removed={},hist=[],angle=0,spinning=false;
 var cv=document.getElementById("wheel"),cx=cv.getContext("2d");
@@ -96,7 +98,7 @@ function chips(){
  Object.keys(G).forEach(function(k){
   var b=document.createElement("button");b.className="chip";b.style.setProperty("--c",G[k].c);
   b.setAttribute("aria-pressed",on[k]);b.textContent=G[k].n+" ("+D[k].length+")";
-  b.onclick=function(){on[k]=!on[k];angle=0;chips();draw();info()};h.appendChild(b);
+  b.onclick=function(){on[k]=!on[k];shuffle();angle=0;chips();draw();info()};h.appendChild(b);
  });
 }
 function info(){document.getElementById("count").textContent=pool().length+" characters on the wheel"}
@@ -104,7 +106,7 @@ function renderHist(){
  var h=document.getElementById("hist");
  if(!hist.length){h.innerHTML="";return}
  h.innerHTML="Past spins: "+hist.join(", ")+'<button id="rs">Reset all</button>';
- document.getElementById("rs").onclick=function(){hist=[];removed={};angle=0;renderHist();draw();info()};
+ document.getElementById("rs").onclick=function(){hist=[];removed={};shuffle();angle=0;renderHist();draw();info()};
 }
 function spin(){
  var p=pool(),n=p.length;if(spinning||!n)return;
